@@ -199,7 +199,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
           <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition">
             <div className="w-35 h-35 flex items-center justify-center">
               <img 
-                src="/WhatsApp Image 2025-12-03 at 15.22.59.png" 
+                src="/logo.png"
                 alt="AIShortz Logo" 
                 className="w-full h-full object-contain"
               />
