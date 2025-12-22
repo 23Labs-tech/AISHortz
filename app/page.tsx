@@ -1037,7 +1037,7 @@ export default function StoryShortLanding() {
             <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition">
               <div className="w-35 h-35 flex items-center justify-center">
                 <img 
-                  src="/WhatsApp%20Image%202025-12-03%20at%2015.22.59.png" 
+                  src="/logo.png" 
                   alt="AIShortz Logo" 
                   className="w-full h-full object-contain"
                 />
