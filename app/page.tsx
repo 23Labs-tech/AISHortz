@@ -1394,7 +1394,7 @@ export default function StoryShortLanding() {
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-10">
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <img src="/WhatsApp%20Image%202025-12-03%20at%2015.22.59.png" alt="AIShortz" className="w-35 h-35 object-contain" />
+              <img src="/logo.png" alt="AIShortz" className="w-35 h-35 object-contain" />
             </div>
             <p className="text-sm">Copyright © 2025 AIShortz<br />All rights reserved</p>
           </div>
