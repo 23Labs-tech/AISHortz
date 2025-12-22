@@ -2,14 +2,15 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import type { Session } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import type { Session, SupabaseClient } from '@supabase/supabase-js';
 
 type SupabaseContext = {
   session: Session | null;
+  supabase: SupabaseClient;
 };
 
-const Context = createContext<SupabaseContext>({ session: null });
+const Context = createContext<SupabaseContext | undefined>(undefined);
 
 export default function SupabaseProvider({
   children,
@@ -19,7 +20,11 @@ export default function SupabaseProvider({
   session: Session | null;
 }) {
   const [session, setSession] = useState<Session | null>(serverSession);
-  const supabase = createClientComponentClient();
+  
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -34,11 +39,17 @@ export default function SupabaseProvider({
   }, [supabase]);
 
   return (
-    <Context.Provider value={{ session }}>
+    <Context.Provider value={{ session, supabase }}>
       {children}
     </Context.Provider>
   );
 }
 
 // Hook to use in any component
-export const useSupabaseSession = () => useContext(Context);
+export const useSupabaseSession = () => {
+  const context = useContext(Context);
+  if (context === undefined) {
+    throw new Error('useSupabaseSession must be used within a SupabaseProvider');
+  }
+  return context;
+};
