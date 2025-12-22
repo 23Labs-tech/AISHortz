@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import AuthButton from "./../components/AuthButton";
+import AuthButton from "./AuthButton";
 // import { useRouter, useSearchParams } from "next/navigation";
 
 const ResetPassword = () => {
