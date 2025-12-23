@@ -1124,14 +1124,14 @@
 // }
 
 // app/api/verify-payment/route.ts
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20' as any,
 });
-
-export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {

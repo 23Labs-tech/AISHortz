@@ -1,7 +1,7 @@
 // app/api/deduct-credits/route.ts
-import { NextResponse } from 'next/server';
-
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+import { NextResponse } from 'next/server';
 
 // Define credit costs for each model
 const MODEL_CREDITS: Record<string, { credits: number; name: string }> = {

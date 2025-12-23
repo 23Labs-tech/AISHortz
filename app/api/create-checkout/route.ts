@@ -399,6 +399,8 @@
 // }
 
 // app/api/create-checkout/route.ts
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createServerClient } from '@supabase/ssr';
@@ -407,8 +409,6 @@ import { cookies } from 'next/headers';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-06-20' as any,
 });
-
-export const dynamic = 'force-dynamic';
 
 // ✅ All plan keys are lowercase
 const PLANS = {

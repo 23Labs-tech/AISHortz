@@ -1,4 +1,6 @@
 // app/api/video-status/route.ts
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { jobStore } from '@/lib/job-store';
 
