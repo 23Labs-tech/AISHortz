@@ -802,7 +802,7 @@ export async function POST(request: Request) {
     // ============================================
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
                     process.env.NEXT_PUBLIC_APP_URL || 
-                    'http://localhost:3000';
+                    'https://aishortz.app/';
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
