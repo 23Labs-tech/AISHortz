@@ -1127,13 +1127,13 @@
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20' as any,
-});
+import type Stripe from 'stripe';
+import { getStripe } from '@/lib/stripe';
 
 export async function POST(request: Request) {
+  // Initialize Stripe inside the handler
+  const stripe = getStripe();
+  
   try {
     const { session_id } = await request.json();
 
