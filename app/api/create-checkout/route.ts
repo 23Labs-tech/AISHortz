@@ -398,17 +398,245 @@
 //   }
 // }
 
+// // app/api/create-checkout/route.ts
+// export const dynamic = 'force-dynamic';
+// export const runtime = 'nodejs';
+// import { NextResponse } from 'next/server';
+// import Stripe from 'stripe';
+// import { createServerClient } from '@supabase/ssr';
+// import { cookies } from 'next/headers';
+
+// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+//   apiVersion: '2024-06-20' as any,
+// });
+
+// // ✅ All plan keys are lowercase
+// const PLANS = {
+//   starter: { 
+//     monthlyPrice: 30, 
+//     yearlyPrice: 288,  // $24 × 12
+//     credits: 50, 
+//     name: 'Starter Plan' 
+//   },
+//   growth: { 
+//     monthlyPrice: 75, 
+//     yearlyPrice: 720,  // $60 × 12
+//     credits: 150, 
+//     name: 'Growth Plan' 
+//   },
+//   pro: { 
+//     monthlyPrice: 110, 
+//     yearlyPrice: 1056,  // $88 × 12
+//     credits: 250, 
+//     name: 'Pro Plan' 
+//   },
+//   max: { 
+//     monthlyPrice: 190, 
+//     yearlyPrice: 1824,  // $152 × 12
+//     credits: 500, 
+//     name: 'Max Plan' 
+//   },
+// } as const;
+
+// type PlanKey = keyof typeof PLANS;
+
+// export async function POST(request: Request) {
+//   console.log('=== CREATE CHECKOUT CALLED ===');
+  
+//   try {
+//     // ============================================
+//     // PARSE REQUEST BODY
+//     // ============================================
+//     let body;
+//     try {
+//       body = await request.json();
+//     } catch (parseError) {
+//       console.error('Failed to parse request body:', parseError);
+//       return NextResponse.json(
+//         { error: 'Invalid JSON in request body' }, 
+//         { status: 400 }
+//       );
+//     }
+
+//     console.log('Request body:', JSON.stringify(body, null, 2));
+
+//     // ============================================
+//     // AUTHENTICATE USER
+//     // ============================================
+//     const cookieStore = await cookies();
+
+//     const supabase = createServerClient(
+//       process.env.NEXT_PUBLIC_SUPABASE_URL!,
+//       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+//       {
+//         cookies: {
+//           getAll: () => cookieStore.getAll(),
+//           setAll: (cookiesToSet) => {
+//             cookiesToSet.forEach(({ name, value, options }) => {
+//               try { cookieStore.set(name, value, options); } catch {}
+//             });
+//           },
+//         },
+//       }
+//     );
+
+//     const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+//     if (authError) {
+//       console.error('Auth error:', authError);
+//       return NextResponse.json(
+//         { error: 'Authentication failed', details: authError.message }, 
+//         { status: 401 }
+//       );
+//     }
+    
+//     if (!user) {
+//       console.error('No user found');
+//       return NextResponse.json(
+//         { error: 'Unauthorized - Please log in' }, 
+//         { status: 401 }
+//       );
+//     }
+
+//     console.log('User authenticated:', user.id);
+
+//     // ============================================
+//     // VALIDATE PLAN
+//     // ============================================
+//     // Convert to lowercase to handle case mismatches
+//     const planInput = body?.plan;
+//     const plan = typeof planInput === 'string' ? planInput.toLowerCase() : planInput;
+    
+//     console.log('Plan input:', planInput);
+//     console.log('Plan (normalized):', plan);
+//     console.log('Valid plans:', Object.keys(PLANS));
+
+//     if (!plan) {
+//       console.error('No plan provided');
+//       return NextResponse.json({ 
+//         error: 'No plan specified',
+//         received: body,
+//         validPlans: Object.keys(PLANS)
+//       }, { status: 400 });
+//     }
+
+//     const planConfig = PLANS[plan as PlanKey];
+    
+//     if (!planConfig) {
+//       console.error(`Invalid plan: "${plan}"`);
+//       return NextResponse.json({ 
+//         error: `Invalid plan: "${planInput}"`,
+//         validPlans: Object.keys(PLANS),
+//         received: body
+//       }, { status: 400 });
+//     }
+
+//     // ============================================
+//     // VALIDATE BILLING CYCLE
+//     // ============================================
+//     let billingCycle = body?.billingCycle;
+    
+//     if (!billingCycle || (billingCycle !== 'monthly' && billingCycle !== 'yearly')) {
+//       console.log(`Invalid billing cycle "${billingCycle}", defaulting to monthly`);
+//       billingCycle = 'monthly';
+//     }
+
+//     // ============================================
+//     // CALCULATE PRICE
+//     // ============================================
+//     let stripeAmount: number;
+//     let stripeInterval: 'month' | 'year';
+//     let description: string;
+
+//     if (billingCycle === 'monthly') {
+//       stripeAmount = planConfig.monthlyPrice;
+//       stripeInterval = 'month';
+//       description = `${planConfig.credits} AI Video Credits - Billed $${stripeAmount}/month`;
+//     } else {
+//       stripeAmount = planConfig.yearlyPrice;
+//       stripeInterval = 'year';
+//       const monthlyEquivalent = Math.round(stripeAmount / 12);
+//       description = `${planConfig.credits} AI Video Credits - Billed $${stripeAmount}/year ($${monthlyEquivalent}/mo)`;
+//     }
+
+//     console.log('=== CHECKOUT DETAILS ===');
+//     console.log('Plan:', plan);
+//     console.log('Plan Config:', planConfig);
+//     console.log('Billing Cycle:', billingCycle);
+//     console.log('Amount:', stripeAmount);
+//     console.log('Interval:', stripeInterval);
+
+//     // ============================================
+//     // CREATE STRIPE CHECKOUT SESSION
+//     // ============================================
+//     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+//                     process.env.NEXT_PUBLIC_APP_URL || 
+//                     'http://localhost:3000';
+
+//     const session = await stripe.checkout.sessions.create({
+//       payment_method_types: ['card'],
+//       line_items: [{
+//         price_data: {
+//           currency: 'usd',
+//           product_data: { 
+//             name: `${planConfig.name} - ${billingCycle === 'monthly' ? 'Monthly' : 'Yearly'}`,
+//             description: description,
+//           },
+//           unit_amount: stripeAmount * 100, // Stripe uses cents
+//           recurring: {
+//             interval: stripeInterval,
+//           },
+//         },
+//         quantity: 1,
+//       }],
+//       mode: 'subscription',
+//       success_url: `${baseUrl}/buy-credits/success?session_id={CHECKOUT_SESSION_ID}`,
+//       cancel_url: `${baseUrl}/pricing?canceled=true`,
+//       client_reference_id: user.id,
+//       customer_email: user.email,
+//       metadata: {
+//         user_id: user.id,
+//         credits: planConfig.credits.toString(),
+//         plan: plan,
+//         billing_cycle: billingCycle,
+//       },
+//     });
+
+//     console.log('Stripe session created:', session.id);
+//     console.log('Checkout URL:', session.url);
+
+//     return NextResponse.json({ 
+//       url: session.url,
+//       sessionId: session.id 
+//     });
+
+//   } catch (error: any) {
+//     console.error('=== CHECKOUT ERROR ===');
+//     console.error('Error name:', error.name);
+//     console.error('Error message:', error.message);
+//     console.error('Error stack:', error.stack);
+    
+//     // Check for specific Stripe errors
+//     if (error.type === 'StripeInvalidRequestError') {
+//       return NextResponse.json({ 
+//         error: 'Stripe configuration error',
+//         details: error.message 
+//       }, { status: 500 });
+//     }
+    
+//     return NextResponse.json({ 
+//       error: error.message || 'Failed to create checkout session' 
+//     }, { status: 500 });
+//   }
+// }
+
 // app/api/create-checkout/route.ts
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-06-20' as any,
-});
+import { getStripe } from '@/lib/stripe';
 
 // ✅ All plan keys are lowercase
 const PLANS = {
@@ -444,6 +672,9 @@ export async function POST(request: Request) {
   console.log('=== CREATE CHECKOUT CALLED ===');
   
   try {
+    // Initialize Stripe inside the handler
+    const stripe = getStripe();
+    
     // ============================================
     // PARSE REQUEST BODY
     // ============================================
