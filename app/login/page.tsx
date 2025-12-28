@@ -152,7 +152,7 @@ function LoginContent() {
         {/* Left: Form */}
         <div className="max-w-md mx-auto w-full">
           <div className="flex items-center gap-3 mb-12">
-            <img src="/logo.png" alt="AIShortz" className="h-28 object-contain" />
+            <img src="/logo.png" alt="AIShortz" className="h-36 object-contain" />
           </div>
 
           {/* Payment Success Message */}
